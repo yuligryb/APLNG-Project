@@ -165,386 +165,109 @@ const content = {
     }
 };
 
-// Globe JavaScript
-const canvas = document.getElementById('globeCanvas');
-const ctx = canvas.getContext('2d');
+// ============================================================
+// GLOBE.GL IMPLEMENTATION - REPLACE YOUR OLD GLOBE CODE HERE
+// ============================================================
 
-let rotation = 0;
-let autoRotate = true;
-let isDragging = false;
-let lastX = 0;
-let animationId = null;
+let world;
+let globeInitialized = false;
 
-let centerX = canvas.width / 2;
-let centerY = canvas.height / 2;
-
-// Pin locations (lat, lon, label, modalId)
-const pins = [
-    { lat: 42, lon: 12, label: '🇮🇹 Italy', id: 'italy' },
-    { lat: 45, lon: -95, label: '🌎 Indigenous', id: 'indigenous' },
-    { lat: 35, lon: 105, label: '🇨🇳 Asia', id: 'immigrant' },
-    { lat: 0, lon: 20, label: '🌍 Africa', id: 'immigrant' },
-    { lat: -25, lon: 135, label: '🇦🇺 Australia', id: 'immigrant' }
+// Pin locations with their modal IDs
+const locationMarkers = [
+    { lat: 42, lng: 12, label: '🇮🇹 Italy', id: 'italy', size: 1.2, color: '#ff4757' },
+    { lat: 40, lng: -100, label: '🌎 Indigenous Americas', id: 'indigenous', size: 1.2, color: '#ff4757' },
+    { lat: 35, lng: 105, label: '🌏 Asia', id: 'immigrant', size: 1.2, color: '#ff4757' },
+    { lat: 0, lng: 20, label: '🌍 Africa', id: 'immigrant', size: 1.2, color: '#ff4757' },
+    { lat: -25, lng: 135, label: '🇦🇺 Australia', id: 'immigrant', size: 1.2, color: '#ff4757' }
 ];
 
-// Detailed continent coordinates (longitude, latitude)
-const continents = [
-    // North America
-    { name: 'North America', color: '#2d5016', points: [
-        [-170, 65], [-160, 68], [-140, 70], [-130, 68], [-120, 65], [-110, 58], 
-        [-100, 50], [-95, 45], [-90, 40], [-85, 35], [-80, 30], [-75, 25],
-        [-72, 30], [-70, 40], [-65, 45], [-60, 48], [-55, 52], [-50, 58],
-        [-60, 65], [-80, 70], [-100, 72], [-130, 72], [-150, 70], [-170, 65]
-    ]},
-    // Central America
-    { name: 'Central America', color: '#2d5016', points: [
-        [-105, 30], [-100, 28], [-95, 25], [-90, 20], [-85, 15], [-80, 12],
-        [-78, 10], [-75, 8], [-82, 10], [-90, 12], [-95, 18], [-100, 22], [-105, 30]
-    ]},
-    // South America
-    { name: 'South America', color: '#2d5016', points: [
-        [-80, 12], [-75, 10], [-70, 5], [-65, 0], [-60, -5], [-57, -15],
-        [-55, -25], [-52, -35], [-50, -45], [-55, -52], [-65, -55], [-72, -52],
-        [-75, -45], [-77, -35], [-78, -25], [-80, -15], [-82, -5], [-80, 5], [-80, 12]
-    ]},
-    // Europe
-    { name: 'Europe', color: '#3a6b1e', points: [
-        [-10, 55], [-5, 60], [0, 62], [5, 65], [15, 68], [25, 70], [35, 68],
-        [40, 65], [45, 60], [48, 55], [45, 50], [40, 45], [35, 42], [30, 40],
-        [20, 38], [10, 37], [5, 40], [0, 43], [-5, 48], [-10, 52], [-10, 55]
-    ]},
-    // Africa
-    { name: 'Africa', color: '#2d5016', points: [
-        [-18, 35], [-15, 32], [-10, 28], [0, 25], [10, 23], [20, 20], [30, 18],
-        [38, 15], [42, 10], [45, 5], [48, 0], [50, -5], [48, -12], [45, -18],
-        [42, -25], [38, -30], [32, -33], [25, -35], [18, -34], [12, -30],
-        [8, -25], [5, -18], [3, -10], [0, -2], [-5, 5], [-8, 12], [-12, 18],
-        [-15, 25], [-17, 30], [-18, 35]
-    ]},
-    // Asia
-    { name: 'Asia', color: '#2d5016', points: [
-        [50, 70], [60, 72], [75, 73], [90, 72], [105, 70], [120, 68], [135, 65],
-        [145, 60], [150, 55], [155, 48], [158, 42], [160, 35], [155, 28],
-        [148, 22], [140, 18], [130, 15], [120, 12], [110, 10], [100, 8],
-        [90, 8], [80, 10], [70, 15], [65, 22], [60, 30], [58, 38], [55, 45],
-        [52, 52], [50, 60], [50, 70]
-    ]},
-    // Australia
-    { name: 'Australia', color: '#2d5016', points: [
-        [113, -10], [120, -12], [128, -14], [135, -16], [142, -18], [148, -22],
-        [152, -27], [154, -32], [153, -37], [150, -40], [145, -42], [138, -43],
-        [130, -42], [122, -40], [116, -36], [112, -30], [110, -22], [111, -16], [113, -10]
-    ]},
-    // Greenland
-    { name: 'Greenland', color: '#2d5016', points: [
-        [-45, 83], [-40, 82], [-30, 80], [-25, 78], [-22, 75], [-20, 70],
-        [-23, 65], [-28, 62], [-35, 60], [-42, 62], [-48, 65], [-52, 68],
-        [-50, 73], [-48, 78], [-45, 83]
-    ]}
-];
+const uniformColor = '#34A56F'; // Uniform color for all countries
 
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    const size = Math.min(container.clientWidth * 0.95, container.clientHeight * 0.95, 1000);
-    canvas.width = size;
-    canvas.height = size;
-    centerX = canvas.width / 2;
-    centerY = canvas.height / 2;
+function initGlobe() {
+    if (globeInitialized) return;
+    
+    const container = document.getElementById('globeViz');
+    
+    world = Globe()
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+        .lineHoverPrecision(0)
+        .atmosphereColor('#667eea')
+        .atmosphereAltitude(0.25)
+        .pointsData(locationMarkers)
+        .pointAltitude(0.02)
+        .pointRadius('size')
+        .pointColor('color')
+        .pointLabel(d => `<div style="background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; color: white; font-weight: bold;">${d.label}</div>`)
+        .onPointClick(point => {
+            openModal(point.id);
+        })
+        .pointsMerge(false)
+        (container);
+    
+    // Load and display countries
+    loadCountries();
+    
+    // Set initial point of view
+    world.pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
+    
+    // Enable auto-rotation
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.5;
+    world.controls().enableZoom = true;
+    
+    globeInitialized = true;
+    
+    // Resize globe to fit container
+    resizeGlobe();
 }
 
-function drawGlobe() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const radius = Math.min(canvas.width, canvas.height) / 2 - 40;
-    
-    // Draw ocean with gradient
-    const oceanGradient = ctx.createRadialGradient(
-        centerX - radius * 0.3, centerY - radius * 0.3, 0,
-        centerX, centerY, radius
-    );
-    oceanGradient.addColorStop(0, '#5b9bd5');
-    oceanGradient.addColorStop(0.5, '#3a7cb8');
-    oceanGradient.addColorStop(1, '#1e4d7a');
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fillStyle = oceanGradient;
-    ctx.fill();
-    
-    // Add lighting effect
-    const lightGradient = ctx.createRadialGradient(
-        centerX - radius * 0.4, centerY - radius * 0.4, radius * 0.2,
-        centerX, centerY, radius
-    );
-    lightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-    lightGradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.1)');
-    lightGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
-    
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.fillStyle = lightGradient;
-    ctx.fill();
-    
-    // Draw continents
-    continents.forEach(continent => {
-        drawContinent(continent, radius);
-    });
-    
-    // Draw pins
-    pins.forEach(pin => {
-        drawPin(pin, radius);
-    });
-    
-    // Draw globe outline
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-}
-
-function drawContinent(continent, radius) {
-    const transformedPoints = [];
-    
-    // Transform all points
-    for (let i = 0; i < continent.points.length; i++) {
-        const lon = continent.points[i][0];
-        const lat = continent.points[i][1];
-        const pos = projectLatLon(lat, lon, radius);
-        transformedPoints.push(pos);
-    }
-    
-    // Check if any points are visible
-    const hasVisiblePoints = transformedPoints.some(p => p.visible);
-    
-    if (!hasVisiblePoints) return;
-    
-    // Draw the continent
-    ctx.save();
-    
-    // Clip to globe circle
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    ctx.clip();
-    
-    // Draw continent fill
-    ctx.beginPath();
-    let started = false;
-    
-    for (let i = 0; i < transformedPoints.length; i++) {
-        const point = transformedPoints[i];
+async function loadCountries() {
+    try {
+        const res = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json');
+        const worldData = await res.json();
+        const countries = topojson.feature(worldData, worldData.objects.countries);
         
-        if (point.visible) {
-            if (!started) {
-                ctx.moveTo(point.x, point.y);
-                started = true;
-            } else {
-                ctx.lineTo(point.x, point.y);
-            }
-        }
-    }
-    
-    ctx.closePath();
-    ctx.fillStyle = continent.color;
-    ctx.globalAlpha = 0.95;
-    ctx.fill();
-    
-    // Add continent outline
-    ctx.strokeStyle = 'rgba(0, 50, 0, 0.4)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-    
-    ctx.globalAlpha = 1;
-    ctx.restore();
-}
-
-function drawPin(pin, radius) {
-    const pos = projectLatLon(pin.lat, pin.lon, radius);
-    
-    if (!pos.visible) return;
-    
-    const pinSize = radius / 15; // Made pins bigger
-    
-    // Pin shadow
-    ctx.beginPath();
-    ctx.arc(pos.x + 3, pos.y + 3, pinSize * 1.2, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.fill();
-    
-    // Pin body
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y - pinSize * 1.5, pinSize, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff4757';
-    ctx.fill();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
-    // Pin point
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y - pinSize * 0.5);
-    ctx.lineTo(pos.x - pinSize * 0.8, pos.y + pinSize * 0.5);
-    ctx.lineTo(pos.x + pinSize * 0.8, pos.y + pinSize * 0.5);
-    ctx.closePath();
-    ctx.fillStyle = '#ff4757';
-    ctx.fill();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Label with background
-    const fontSize = Math.max(14, radius / 25);
-    ctx.font = `bold ${fontSize}px Arial`;
-    const textWidth = ctx.measureText(pin.label).width;
-    
-    // Label background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    ctx.fillRect(pos.x - textWidth/2 - 8, pos.y - pinSize * 3.5 - fontSize - 4, textWidth + 16, fontSize + 8);
-    
-    // Label text
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(pin.label, pos.x, pos.y - pinSize * 3.5);
-    
-    // Store position for click detection
-    pin.screenX = pos.x;
-    pin.screenY = pos.y;
-    pin.pinSize = pinSize * 3;
-}
-
-function projectLatLon(lat, lon, radius) {
-    // Convert to radians
-    const phi = (90 - lat) * Math.PI / 180;
-    const theta = (lon + rotation) * Math.PI / 180;
-    
-    // 3D projection
-    const x = radius * Math.sin(phi) * Math.cos(theta);
-    const y = radius * Math.cos(phi);
-    const z = radius * Math.sin(phi) * Math.sin(theta);
-    
-    // Determine visibility - points are visible if they're on the front hemisphere
-    const visible = z > -radius * 0.15;
-    
-    return {
-        x: centerX + x,
-        y: centerY - y,
-        z: z,
-        visible: visible
-    };
-}
-
-function animate() {
-    if (autoRotate) {
-        rotation += 0.2;
-        if (rotation >= 360) rotation = 0;
-    }
-    drawGlobe();
-    animationId = requestAnimationFrame(animate);
-}
-
-function stopAnimation() {
-    if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
+        // Update the globe with the countries
+        world
+            .polygonsData(countries.features)
+            .polygonCapColor(() => uniformColor)
+            .polygonSideColor(() => 'rgba(0, 100, 0, 0.15)')
+            .polygonStrokeColor(() => '#111')
+            .polygonLabel(({ properties: d }) => `
+                <div style="background: rgba(0,0,0,0.8); padding: 10px; border-radius: 8px; color: white;">
+                    <b>${d.name || 'Country'}</b>
+                </div>
+            `)
+            .polygonsTransitionDuration(600);
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        // Fallback: globe will still work without country data
     }
 }
 
-// Mouse interactions
-canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Check if clicked on a pin
-    let clickedPin = false;
-    pins.forEach(pin => {
-        if (pin.screenX && pin.screenY && pin.pinSize) {
-            const dx = x - pin.screenX;
-            const dy = y - pin.screenY;
-            if (Math.sqrt(dx*dx + dy*dy) < pin.pinSize) {
-                openModal(pin.id);
-                clickedPin = true;
-            }
-        }
-    });
-    
-    if (!clickedPin) {
-        isDragging = true;
-        lastX = x;
-    }
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const deltaX = x - lastX;
-        rotation += deltaX * 0.5;
-        lastX = x;
-        autoRotate = false;
-    }
-});
-
-canvas.addEventListener('mouseup', () => {
-    isDragging = false;
-});
-
-canvas.addEventListener('mouseleave', () => {
-    isDragging = false;
-});
-
-// Touch events for mobile
-canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    
-    let clickedPin = false;
-    pins.forEach(pin => {
-        if (pin.screenX && pin.screenY && pin.pinSize) {
-            const dx = x - pin.screenX;
-            const dy = y - pin.screenY;
-            if (Math.sqrt(dx*dx + dy*dy) < pin.pinSize) {
-                openModal(pin.id);
-                clickedPin = true;
-            }
-        }
-    });
-    
-    if (!clickedPin) {
-        isDragging = true;
-        lastX = x;
-    }
-});
-
-canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (isDragging) {
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = touch.clientX - rect.left;
-        const deltaX = x - lastX;
-        rotation += deltaX * 0.5;
-        lastX = x;
-        autoRotate = false;
-    }
-});
-
-canvas.addEventListener('touchend', () => {
-    isDragging = false;
-});
+function resizeGlobe() {
+    if (!world) return;
+    const container = document.getElementById('globeViz');
+    world.width(container.clientWidth);
+    world.height(container.clientHeight);
+}
 
 function toggleRotation() {
-    autoRotate = !autoRotate;
+    if (!world) return;
+    const controls = world.controls();
+    controls.autoRotate = !controls.autoRotate;
 }
 
 function resetView() {
-    rotation = 0;
-    autoRotate = true;
+    if (!world) return;
+    world.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1000);
+    world.controls().autoRotate = true;
 }
+
+// ============================================================
+// PAGE NAVIGATION AND MODAL FUNCTIONS - KEEP ALL OF THIS
+// ============================================================
 
 // Page navigation
 function showPage(pageId) {
@@ -566,13 +289,8 @@ function showPage(pageId) {
     
     if (pageId === 'globe') {
         setTimeout(() => {
-            resizeCanvas();
-            if (!animationId) {
-                animate();
-            }
+            initGlobe();
         }, 100);
-    } else {
-        stopAnimation();
     }
 }
 
@@ -603,14 +321,11 @@ document.addEventListener('keydown', function(event) {
 // Handle window resize
 window.addEventListener('resize', () => {
     if (document.getElementById('globe').classList.contains('active')) {
-        resizeCanvas();
+        resizeGlobe();
     }
 });
 
 // Initialize on load
 window.addEventListener('load', () => {
-    if (document.getElementById('globe').classList.contains('active')) {
-        resizeCanvas();
-        animate();
-    }
+    // Globe will be initialized when the user navigates to that page
 });
