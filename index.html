@@ -47,38 +47,43 @@
             </div>
         </div>
 
-        <!-- Globe Page -->
+<!-- Globe Page -->
         <div id="globe" class="page">
             <div class="globe-container">
-                <h2 class="globe-title">Global Language Loss</h2>
-                <p class="globe-subtitle">🖱️ Drag to rotate • Click pins to explore language loss around the world</p>
-                
-                <canvas id="globeCanvas" width="600" height="600"></canvas>
-                
-                <div class="controls">
-                    <button class="control-btn" onclick="toggleRotation()">⏯️ Toggle Rotation</button>
-                    <button class="control-btn" onclick="resetView()">🔄 Reset View</button>
+                <div class="globe-wrapper">
+                    <canvas id="globeCanvas" width="800" height="800"></canvas>
                 </div>
-
-                <div class="regions-grid">
-                    <div class="region-card" onclick="openModal('italy')">
-                        <div class="region-title">🇮🇹 Italian Heritage</div>
-                        <div class="region-preview">Heritage speakers face challenges maintaining Italian while adapting to new linguistic environments...</div>
+                
+                <div class="globe-sidebar">
+                    <div class="sidebar-header">
+                        <h2 class="globe-title">Global Language Loss</h2>
+                        <p class="globe-subtitle">🖱️ Drag to rotate • Click pins to explore language loss around the world</p>
+                    </div>
+                    
+                    <div class="controls">
+                        <button class="control-btn" onclick="toggleRotation()">⏯️ Toggle Rotation</button>
+                        <button class="control-btn" onclick="resetView()">🔄 Reset View</button>
                     </div>
 
-                    <div class="region-card" onclick="openModal('indigenous')">
-                        <div class="region-title">🌎 Indigenous Communities</div>
-                        <div class="region-preview">Native languages face unique challenges from historical suppression and ongoing marginalization...</div>
-                    </div>
+                    <div class="regions-list">
+                        <div class="region-card" onclick="openModal('italy')">
+                            <div class="region-title">🇮🇹 Italian Heritage</div>
+                            <div class="region-preview">Heritage speakers face challenges maintaining Italian while adapting to new linguistic environments...</div>
+                        </div>
 
-                    <div class="region-card" onclick="openModal('immigrant')">
-                        <div class="region-title">🌍 Immigrant Communities</div>
-                        <div class="region-preview">Second and third-generation speakers navigate between heritage and dominant languages...</div>
+                        <div class="region-card" onclick="openModal('indigenous')">
+                            <div class="region-title">🌎 Indigenous Communities</div>
+                            <div class="region-preview">Native languages face unique challenges from historical suppression and ongoing marginalization...</div>
+                        </div>
+
+                        <div class="region-card" onclick="openModal('immigrant')">
+                            <div class="region-title">🌍 Immigrant Communities</div>
+                            <div class="region-preview">Second and third-generation speakers navigate between heritage and dominant languages...</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal -->
     <div id="modal" class="modal" onclick="closeModal(event)">
