@@ -175,7 +175,6 @@ let isDragging = false;
 let lastX = 0;
 let animationId = null;
 
-const globeRadius = 350;
 let centerX = canvas.width / 2;
 let centerY = canvas.height / 2;
 
@@ -188,9 +187,65 @@ const pins = [
     { lat: -25, lon: 135, label: '🇦🇺 Australia', id: 'immigrant' }
 ];
 
+// Detailed continent coordinates (longitude, latitude)
+const continents = [
+    // North America
+    { name: 'North America', color: '#2d5016', points: [
+        [-170, 65], [-160, 68], [-140, 70], [-130, 68], [-120, 65], [-110, 58], 
+        [-100, 50], [-95, 45], [-90, 40], [-85, 35], [-80, 30], [-75, 25],
+        [-72, 30], [-70, 40], [-65, 45], [-60, 48], [-55, 52], [-50, 58],
+        [-60, 65], [-80, 70], [-100, 72], [-130, 72], [-150, 70], [-170, 65]
+    ]},
+    // Central America
+    { name: 'Central America', color: '#2d5016', points: [
+        [-105, 30], [-100, 28], [-95, 25], [-90, 20], [-85, 15], [-80, 12],
+        [-78, 10], [-75, 8], [-82, 10], [-90, 12], [-95, 18], [-100, 22], [-105, 30]
+    ]},
+    // South America
+    { name: 'South America', color: '#2d5016', points: [
+        [-80, 12], [-75, 10], [-70, 5], [-65, 0], [-60, -5], [-57, -15],
+        [-55, -25], [-52, -35], [-50, -45], [-55, -52], [-65, -55], [-72, -52],
+        [-75, -45], [-77, -35], [-78, -25], [-80, -15], [-82, -5], [-80, 5], [-80, 12]
+    ]},
+    // Europe
+    { name: 'Europe', color: '#3a6b1e', points: [
+        [-10, 55], [-5, 60], [0, 62], [5, 65], [15, 68], [25, 70], [35, 68],
+        [40, 65], [45, 60], [48, 55], [45, 50], [40, 45], [35, 42], [30, 40],
+        [20, 38], [10, 37], [5, 40], [0, 43], [-5, 48], [-10, 52], [-10, 55]
+    ]},
+    // Africa
+    { name: 'Africa', color: '#2d5016', points: [
+        [-18, 35], [-15, 32], [-10, 28], [0, 25], [10, 23], [20, 20], [30, 18],
+        [38, 15], [42, 10], [45, 5], [48, 0], [50, -5], [48, -12], [45, -18],
+        [42, -25], [38, -30], [32, -33], [25, -35], [18, -34], [12, -30],
+        [8, -25], [5, -18], [3, -10], [0, -2], [-5, 5], [-8, 12], [-12, 18],
+        [-15, 25], [-17, 30], [-18, 35]
+    ]},
+    // Asia
+    { name: 'Asia', color: '#2d5016', points: [
+        [50, 70], [60, 72], [75, 73], [90, 72], [105, 70], [120, 68], [135, 65],
+        [145, 60], [150, 55], [155, 48], [158, 42], [160, 35], [155, 28],
+        [148, 22], [140, 18], [130, 15], [120, 12], [110, 10], [100, 8],
+        [90, 8], [80, 10], [70, 15], [65, 22], [60, 30], [58, 38], [55, 45],
+        [52, 52], [50, 60], [50, 70]
+    ]},
+    // Australia
+    { name: 'Australia', color: '#2d5016', points: [
+        [113, -10], [120, -12], [128, -14], [135, -16], [142, -18], [148, -22],
+        [152, -27], [154, -32], [153, -37], [150, -40], [145, -42], [138, -43],
+        [130, -42], [122, -40], [116, -36], [112, -30], [110, -22], [111, -16], [113, -10]
+    ]},
+    // Greenland
+    { name: 'Greenland', color: '#2d5016', points: [
+        [-45, 83], [-40, 82], [-30, 80], [-25, 78], [-22, 75], [-20, 70],
+        [-23, 65], [-28, 62], [-35, 60], [-42, 62], [-48, 65], [-52, 68],
+        [-50, 73], [-48, 78], [-45, 83]
+    ]}
+];
+
 function resizeCanvas() {
     const container = canvas.parentElement;
-    const size = Math.min(container.clientWidth * 0.9, container.clientHeight * 0.9, 800);
+    const size = Math.min(container.clientWidth * 0.95, container.clientHeight * 0.95, 1000);
     canvas.width = size;
     canvas.height = size;
     centerX = canvas.width / 2;
@@ -200,75 +255,107 @@ function resizeCanvas() {
 function drawGlobe() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    const actualRadius = Math.min(globeRadius, canvas.width / 2 - 20, canvas.height / 2 - 20);
+    const radius = Math.min(canvas.width, canvas.height) / 2 - 40;
     
-    // Draw ocean
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#4a90e2';
-    ctx.fill();
-    
-    // Add gradient for depth
-    const gradient = ctx.createRadialGradient(
-        centerX - actualRadius * 0.3, centerY - actualRadius * 0.3, actualRadius * 0.2,
-        centerX, centerY, actualRadius
+    // Draw ocean with gradient
+    const oceanGradient = ctx.createRadialGradient(
+        centerX - radius * 0.3, centerY - radius * 0.3, 0,
+        centerX, centerY, radius
     );
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-    gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.2)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
+    oceanGradient.addColorStop(0, '#5b9bd5');
+    oceanGradient.addColorStop(0.5, '#3a7cb8');
+    oceanGradient.addColorStop(1, '#1e4d7a');
     
     ctx.beginPath();
-    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = oceanGradient;
     ctx.fill();
     
-    // Draw simplified continents
-    drawContinents(actualRadius);
+    // Add lighting effect
+    const lightGradient = ctx.createRadialGradient(
+        centerX - radius * 0.4, centerY - radius * 0.4, radius * 0.2,
+        centerX, centerY, radius
+    );
+    lightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+    lightGradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.1)');
+    lightGradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = lightGradient;
+    ctx.fill();
+    
+    // Draw continents
+    continents.forEach(continent => {
+        drawContinent(continent, radius);
+    });
     
     // Draw pins
     pins.forEach(pin => {
-        drawPin(pin, actualRadius);
+        drawPin(pin, radius);
     });
     
     // Draw globe outline
     ctx.beginPath();
-    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 3;
     ctx.stroke();
 }
 
-function drawContinents(radius) {
-    const scale = radius / globeRadius;
-    const continents = [
-        { points: [[240, 150], [280, 140], [290, 180], [270, 220], [230, 200]], rotation: 90 },
-        { points: [[260, 250], [285, 240], [290, 290], [270, 310], [250, 290]], rotation: 90 },
-        { points: [[350, 170], [370, 165], [375, 185], [365, 195], [345, 190]], rotation: 0 },
-        { points: [[360, 230], [380, 220], [390, 270], [370, 300], [350, 280]], rotation: 0 },
-        { points: [[420, 160], [480, 150], [500, 200], [480, 230], [430, 220]], rotation: -90 },
-        { points: [[470, 320], [500, 315], [510, 340], [495, 355], [465, 345]], rotation: -90 }
-    ];
+function drawContinent(continent, radius) {
+    const transformedPoints = [];
     
-    ctx.fillStyle = '#2d5016';
-    ctx.globalAlpha = 0.7;
+    // Transform all points
+    for (let i = 0; i < continent.points.length; i++) {
+        const lon = continent.points[i][0];
+        const lat = continent.points[i][1];
+        const pos = projectLatLon(lat, lon, radius);
+        transformedPoints.push(pos);
+    }
     
-    continents.forEach(continent => {
-        if (isVisible(continent.rotation)) {
-            ctx.beginPath();
-            const transformedPoints = continent.points.map(p => {
-                const scaledX = centerX + (p[0] - 300) * scale;
-                const scaledY = centerY + (p[1] - 300) * scale;
-                return rotatePoint(scaledX, scaledY, rotation + continent.rotation);
-            });
-            
-            ctx.moveTo(transformedPoints[0].x, transformedPoints[0].y);
-            transformedPoints.forEach(p => ctx.lineTo(p.x, p.y));
-            ctx.closePath();
-            ctx.fill();
+    // Check if any points are visible
+    const hasVisiblePoints = transformedPoints.some(p => p.visible);
+    
+    if (!hasVisiblePoints) return;
+    
+    // Draw the continent
+    ctx.save();
+    
+    // Clip to globe circle
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.clip();
+    
+    // Draw continent fill
+    ctx.beginPath();
+    let started = false;
+    
+    for (let i = 0; i < transformedPoints.length; i++) {
+        const point = transformedPoints[i];
+        
+        if (point.visible) {
+            if (!started) {
+                ctx.moveTo(point.x, point.y);
+                started = true;
+            } else {
+                ctx.lineTo(point.x, point.y);
+            }
         }
-    });
+    }
+    
+    ctx.closePath();
+    ctx.fillStyle = continent.color;
+    ctx.globalAlpha = 0.95;
+    ctx.fill();
+    
+    // Add continent outline
+    ctx.strokeStyle = 'rgba(0, 50, 0, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
     
     ctx.globalAlpha = 1;
+    ctx.restore();
 }
 
 function drawPin(pin, radius) {
@@ -276,34 +363,49 @@ function drawPin(pin, radius) {
     
     if (!pos.visible) return;
     
-    const pinSize = radius / 30;
+    const pinSize = radius / 15; // Made pins bigger
+    
+    // Pin shadow
+    ctx.beginPath();
+    ctx.arc(pos.x + 3, pos.y + 3, pinSize * 1.2, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fill();
     
     // Pin body
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y - pinSize * 2, pinSize, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff6b6b';
+    ctx.arc(pos.x, pos.y - pinSize * 1.5, pinSize, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff4757';
+    ctx.fill();
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    
+    // Pin point
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y - pinSize * 0.5);
+    ctx.lineTo(pos.x - pinSize * 0.8, pos.y + pinSize * 0.5);
+    ctx.lineTo(pos.x + pinSize * 0.8, pos.y + pinSize * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = '#ff4757';
     ctx.fill();
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    // Pin point
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y - pinSize);
-    ctx.lineTo(pos.x - pinSize * 0.6, pos.y);
-    ctx.lineTo(pos.x + pinSize * 0.6, pos.y);
-    ctx.closePath();
-    ctx.fillStyle = '#ff6b6b';
-    ctx.fill();
-    
-    // Label
-    const fontSize = Math.max(12, radius / 30);
+    // Label with background
+    const fontSize = Math.max(14, radius / 25);
     ctx.font = `bold ${fontSize}px Arial`;
+    const textWidth = ctx.measureText(pin.label).width;
+    
+    // Label background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(pos.x - textWidth/2 - 8, pos.y - pinSize * 3.5 - fontSize - 4, textWidth + 16, fontSize + 8);
+    
+    // Label text
     ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
-    ctx.lineWidth = 3;
-    ctx.strokeText(pin.label, pos.x - 30, pos.y - pinSize * 3);
-    ctx.fillText(pin.label, pos.x - 30, pos.y - pinSize * 3);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(pin.label, pos.x, pos.y - pinSize * 3.5);
     
     // Store position for click detection
     pin.screenX = pos.x;
@@ -312,37 +414,24 @@ function drawPin(pin, radius) {
 }
 
 function projectLatLon(lat, lon, radius) {
+    // Convert to radians
     const phi = (90 - lat) * Math.PI / 180;
     const theta = (lon + rotation) * Math.PI / 180;
     
+    // 3D projection
     const x = radius * Math.sin(phi) * Math.cos(theta);
     const y = radius * Math.cos(phi);
     const z = radius * Math.sin(phi) * Math.sin(theta);
     
-    return {
-        x: centerX + x * 0.8,
-        y: centerY - y * 0.8,
-        visible: z > 0
-    };
-}
-
-function rotatePoint(x, y, angle) {
-    const adjustedAngle = angle * Math.PI / 180;
-    const cos = Math.cos(adjustedAngle);
-    const sin = Math.sin(adjustedAngle);
-    
-    const relX = x - centerX;
-    const relY = y - centerY;
+    // Determine visibility - points are visible if they're on the front hemisphere
+    const visible = z > -radius * 0.15;
     
     return {
-        x: centerX + (relX * cos - relY * sin),
-        y: centerY + (relX * sin + relY * cos)
+        x: centerX + x,
+        y: centerY - y,
+        z: z,
+        visible: visible
     };
-}
-
-function isVisible(continentRotation) {
-    const angle = (rotation + continentRotation) % 360;
-    return angle > -90 && angle < 90;
 }
 
 function animate() {
