@@ -30,7 +30,7 @@
         header {
             text-align: center;
             color: white;
-            margin-bottom: 60px;
+            margin-bottom: 20px;
             animation: fadeInDown 1s ease-out;
         }
 
@@ -46,10 +46,16 @@
         }
 
         nav {
+            display: none;
+        }
+
+        .nav-bubbles {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 40px;
+            gap: 40px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
         .nav-btn {
@@ -74,6 +80,97 @@
         .nav-btn.active {
             background: white;
             color: #667eea;
+        }
+
+        .sources-btn {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-left: auto;
+        }
+
+        .sources-btn:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Sources Panel */
+        .sources-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+            transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 300;
+            overflow-y: auto;
+        }
+
+        .sources-panel.active {
+            right: 0;
+        }
+
+        .sources-panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sources-panel-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.3s ease;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        .sources-panel-close:hover {
+            transform: scale(1.2);
+        }
+
+        .sources-panel-title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            padding-right: 40px;
+        }
+
+        .sources-panel-content {
+            padding: 30px;
+            line-height: 1.8;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .sources-panel-content p {
+            margin-bottom: 15px;
+        }
+
+        .sources-panel-content a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .sources-panel-content a:hover {
+            text-decoration: underline;
         }
 
         .page {
@@ -138,17 +235,52 @@
         }
 
         .bubble-title {
-            font-size: 1.5em;
+            font-size: 2.5em;
             font-weight: bold;
             color: #667eea;
             margin-bottom: 10px;
         }
 
         .bubble-preview {
-            font-size: 0.9em;
+            font-size: 1.3em;
             color: #666;
             text-align: center;
             padding: 0 20px;
+        }
+
+        /* Small bubble for Global Impact */
+        .bubble.small-bubble {
+            width: 160px;
+            height: 160px;
+        }
+
+        .bubble.small-bubble .bubble-title {
+            font-size: 1.2em;
+        }
+
+        .bubble.small-bubble .bubble-preview {
+            font-size: 0.8em;
+        }
+
+        /* Map button */
+        .map-btn {
+            display: block;
+            padding: 12px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            margin: 0 auto 40px;
+        }
+
+        .map-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
         }
 
         /* Modal */
@@ -216,7 +348,7 @@
             right: 0;
             bottom: 0;
             display: flex;
-            background: #0a1e3d;
+            background: transparent;
             padding: 0;
             margin: 0;
             z-index: 100;
@@ -228,12 +360,47 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            background: #0a1e3d;
+            background: transparent;
+        }
+
+        .globe-wrapper::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 5px 10px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1.5px 1.5px at 20px 30px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1px 1px at 40px 15px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1px 1px at 50px 50px, #ffeb3b, rgba(255,255,255,0)),
+                radial-gradient(2px 2px at 60px 70px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1.5px 1.5px at 80px 20px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1px 1px at 100px 40px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1px 1px at 130px 80px, #fff, rgba(255,255,255,0)),
+                radial-gradient(2px 2px at 90px 10px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1px 1px at 10px 70px, #fff, rgba(255,255,255,0)),
+                radial-gradient(1.5px 1.5px at 70px 45px, #fff, rgba(255,255,255,0));
+            background-repeat: repeat;
+            background-size: 150px 150px;
+            background-color: #000;
+            pointer-events: none;
+            z-index: 0;
+            animation: twinkle 4s infinite ease-in-out;
+            opacity: 0.9;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
         #globeViz {
             width: 100%;
             height: 100%;
+            position: relative;
+            z-index: 10;
         }
 
         /* Slide-out Info Panel */
@@ -367,6 +534,61 @@
             z-index: 150;
         }
 
+        /* Pins Popup */
+        .pins-popup {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            transform: none;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 140;
+            max-width: 250px;
+            max-height: 250px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pins-popup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .pins-popup-content {
+            overflow-y: auto;
+            padding: 10px 15px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .pin-item {
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 0.75em;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .pin-item:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        .pin-item.clicked {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -446,37 +668,34 @@
             <p class="subtitle">Understanding Generational Language Loss</p>
         </header>
 
-        <nav>
-            <button class="nav-btn active" onclick="showPage('bubbles')">Overview</button>
-            <button class="nav-btn" onclick="showPage('globe')">Global Impact</button>
-        </nav>
+        <div class="nav-bubbles">
+            <button class="sources-btn" onclick="openSourcesPanel()">Sources</button>
+        </div>
 
         <!-- Bubbles Page -->
         <div id="bubbles" class="page active">
+            <button class="map-btn" onclick="showPage('globe')">View Map</button>
             <div class="bubbles-container">
                 <div class="bubble" onclick="openModal('why')">
-                    <div class="bubble-icon">🤔</div>
                     <div class="bubble-title">Why</div>
                     <div class="bubble-preview">Causes of language loss</div>
                 </div>
 
                 <div class="bubble" onclick="openModal('how')">
-                    <div class="bubble-icon">🔄</div>
                     <div class="bubble-title">How</div>
                     <div class="bubble-preview">The process of language shift</div>
                 </div>
 
                 <div class="bubble" onclick="openModal('effects')">
-                    <div class="bubble-icon">💔</div>
                     <div class="bubble-title">Effects</div>
                     <div class="bubble-preview">Impact on communities</div>
                 </div>
 
                 <div class="bubble" onclick="openModal('solutions')">
-                    <div class="bubble-icon">✨</div>
                     <div class="bubble-title">Solutions</div>
                     <div class="bubble-preview">Prevention and revitalization</div>
                 </div>
+
             </div>
         </div>
 
@@ -488,14 +707,20 @@
                     
                     <!-- Control Buttons -->
                     <div class="globe-controls">
-                        <button class="back-btn" onclick="showPage('bubbles')">← Back to Overview</button>
-                        <button class="control-btn" onclick="toggleRotation()">⏯️ Toggle Rotation</button>
-                        <button class="control-btn" onclick="resetView()">🔄 Reset View</button>
+                        <button class="back-btn" onclick="showPage('bubbles')">Back to Overview</button>
+                        <button class="control-btn" onclick="toggleRotation()">Toggle Rotation</button>
+                        <button class="control-btn" onclick="resetView()">Reset View</button>
                     </div>
 
                     <!-- Instructions -->
                     <div class="globe-instructions">
-                        🖱️ Drag to rotate • Click pins to learn more
+                        Drag to rotate • Click pins to learn more
+                    </div>
+
+                    <!-- Pins List Popup -->
+                    <div class="pins-popup" id="pinsPopup">
+                        <div class="pins-popup-header">Location Pins</div>
+                        <div class="pins-popup-content" id="pinsPopupContent"></div>
                     </div>
                 </div>
 
@@ -520,335 +745,15 @@
         </div>
     </div>
 
-    <script>
-        // Content for modals and info panels
-        const content = {
-            why: {
-                title: "Why Does Language Loss Happen?",
-                text: `
-                    <p><strong>Language loss occurs due to several interconnected factors:</strong></p>
-                    <br>
-                    <p><strong>1. Migration & Displacement</strong><br>
-                    When families move to new countries, dominant languages often take precedence in education, work, and social integration. Children may prioritize the majority language to fit in with peers.</p>
-                    <br>
-                    <p><strong>2. Social Pressure & Stigma</strong><br>
-                    Heritage languages can be stigmatized or viewed as "less valuable" than dominant languages, leading speakers to abandon them in favor of linguistic assimilation.</p>
-                    <br>
-                    <p><strong>3. Limited Use in Daily Life</strong><br>
-                    When heritage languages aren't reinforced in schools, media, or public spaces, younger generations have fewer opportunities and motivations to maintain fluency.</p>
-                    <br>
-                    <p><strong>4. Generational Disconnect</strong><br>
-                    As older generations pass away, the primary speakers and cultural transmitters of heritage languages disappear, creating a critical break in language transmission.</p>
-                `
-            },
-            how: {
-                title: "How Language Loss Happens",
-                text: `
-                    <p><strong>Language shift occurs through a predictable pattern:</strong></p>
-                    <br>
-                    <p><strong>Generation 1: Immigrants/Original Speakers</strong><br>
-                    Fully fluent in heritage language, limited proficiency in dominant language. Use heritage language at home.</p>
-                    <br>
-                    <p><strong>Generation 2: First Generation Born in New Country</strong><br>
-                    Bilingual but may prefer dominant language. Understand heritage language but respond in dominant language. Experience pressure to assimilate.</p>
-                    <br>
-                    <p><strong>Generation 3: Grandchildren</strong><br>
-                    Limited or no fluency in heritage language. May understand some phrases but cannot speak fluently. Primarily use dominant language in all contexts.</p>
-                    <br>
-                    <p><strong>The Critical Period</strong><br>
-                    Research shows that without active maintenance, heritage languages can be lost within 2-3 generations. The transition from Generation 2 to 3 is particularly critical.</p>
-                `
-            },
-            effects: {
-                title: "Effects of Language Loss",
-                text: `
-                    <p><strong>The consequences extend far beyond communication:</strong></p>
-                    <br>
-                    <p><strong>1. Loss of Cultural Identity</strong><br>
-                    Language carries culture, traditions, and worldviews. When a language dies, unique ways of understanding and expressing reality disappear with it.</p>
-                    <br>
-                    <p><strong>2. Family Disconnect</strong><br>
-                    Grandchildren who cannot speak heritage languages struggle to communicate with grandparents, creating emotional distance and breaking family bonds.</p>
-                    <br>
-                    <p><strong>3. Feelings of Inadequacy</strong><br>
-                    Many heritage speakers report feeling "not enough"—neither fully fluent in heritage language nor fully accepted in the dominant culture. This creates identity struggles.</p>
-                    <br>
-                    <p><strong>4. Loss of Linguistic Diversity</strong><br>
-                    Each language represents unique knowledge systems, cognitive patterns, and cultural wisdom. Global linguistic diversity shrinks as languages disappear.</p>
-                    <br>
-                    <p><strong>5. Community Fragmentation</strong><br>
-                    Shared language creates community cohesion. Language loss can fragment ethnic communities and weaken social support networks.</p>
-                `
-            },
-            solutions: {
-                title: "Solutions & Revitalization",
-                text: `
-                    <p><strong>Preventing and reversing language loss requires multi-level intervention:</strong></p>
-                    <br>
-                    <p><strong>1. Family-Level Strategies</strong><br>
-                    • Consistent use of heritage language at home<br>
-                    • Creating engaging, positive associations with the language<br>
-                    • Connecting children with fluent speakers (grandparents, community members)</p>
-                    <br>
-                    <p><strong>2. Educational Support</strong><br>
-                    • Heritage language classes in schools<br>
-                    • Dual-language immersion programs<br>
-                    • Reading materials and resources for young learners<br>
-                    • Validating multilingualism as an asset, not a deficit</p>
-                    <br>
-                    <p><strong>3. Community Resources</strong><br>
-                    • Language nests and cultural programs<br>
-                    • Media and entertainment in heritage languages<br>
-                    • Community events that celebrate linguistic diversity<br>
-                    • Digital resources and apps for language learning</p>
-                    <br>
-                    <p><strong>4. Policy & Institutional Change</strong><br>
-                    • Recognition of linguistic rights<br>
-                    • Funding for language preservation programs<br>
-                    • Reducing stigma around non-dominant languages<br>
-                    • Supporting heritage language research and documentation</p>
-                    <br>
-                    <p><strong>5. Embracing Multilingualism</strong><br>
-                    Research shows you can be fluent in multiple languages—it's beneficial for cognitive development, cultural identity, and professional opportunities. Language loss is preventable with the right support.</p>
-                `
-            },
-            italy: {
-                title: "🇮🇹 Italian Language Heritage",
-                text: `
-                    <p><strong>The Italian-American Experience</strong></p>
-                    <br>
-                    <p>Italian immigrants brought rich linguistic diversity to the United States, including various regional dialects. However, second and third-generation Italian-Americans often experienced significant language loss.</p>
-                    <br>
-                    <p><strong>Key Challenges:</strong><br>
-                    • Pressure to assimilate during the early-mid 20th century<br>
-                    • Italian was sometimes discouraged in schools<br>
-                    • Regional dialects (Sicilian, Neapolitan) were often replaced by Standard Italian or English<br>
-                    • Limited formal education in Italian language and culture</p>
-                    <br>
-                    <p><strong>Current Status:</strong><br>
-                    Many third and fourth-generation Italian-Americans report understanding some Italian phrases but cannot maintain conversations. Interest in reclaiming heritage language is growing, with adult learners seeking to reconnect with their roots.</p>
-                    <br>
-                    <p><strong>Preservation Efforts:</strong><br>
-                    Italian cultural centers, language classes, and study abroad programs help heritage speakers reconnect with their linguistic heritage.</p>
-                `
-            },
-            indigenous: {
-                title: "🌎 Indigenous Language Rights",
-                text: `
-                    <p><strong>Indigenous Languages Face Unique Challenges</strong></p>
-                    <br>
-                    <p>Indigenous communities worldwide experience the most severe language loss, with many languages critically endangered or already extinct.</p>
-                    <br>
-                    <p><strong>Historical Context:</strong><br>
-                    • Forced attendance at boarding schools where native languages were forbidden<br>
-                    • Systematic cultural suppression and assimilation policies<br>
-                    • Physical punishment for speaking heritage languages<br>
-                    • Intergenerational trauma affecting language transmission</p>
-                    <br>
-                    <p><strong>Current Crisis:</strong><br>
-                    UNESCO estimates that one indigenous language dies every two weeks. Many languages have fewer than 100 fluent speakers, and most are elderly.</p>
-                    <br>
-                    <p><strong>Revitalization Movements:</strong><br>
-                    • Language immersion schools (like Hawaiian language nests)<br>
-                    • Master-apprentice programs pairing elders with young learners<br>
-                    • Digital documentation and archiving projects<br>
-                    • Legal recognition of indigenous language rights<br>
-                    • Community-driven revitalization programs</p>
-                    <br>
-                    <p><strong>Success Stories:</strong><br>
-                    Hawaiian, Māori, and some Native American languages have seen successful revitalization through dedicated community efforts and institutional support.</p>
-                `
-            },
-            immigrant: {
-                title: "🌍 Immigrant Community Languages",
-                text: `
-                    <p><strong>The Immigrant Language Journey</strong></p>
-                    <br>
-                    <p>Immigrant communities across the globe face similar patterns of language shift and loss, regardless of the specific languages involved.</p>
-                    <br>
-                    <p><strong>Common Experiences:</strong><br>
-                    • Children become interpreters for parents, reversing family dynamics<br>
-                    • School systems that don't support bilingualism<br>
-                    • Peer pressure to speak only the dominant language<br>
-                    • Parents may stop speaking heritage language thinking it will help children succeed</p>
-                    <br>
-                    <p><strong>The "Linguistically Dead" Phenomenon:</strong><br>
-                    Many heritage speakers describe feeling "linguistically dead" when they lack fluency in their heritage language—experiencing loss of connection to family history, culture, and identity.</p>
-                    <br>
-                    <p><strong>The Multilingual Advantage:</strong><br>
-                    Research consistently shows that bilingualism and multilingualism offer cognitive, social, and economic benefits. Children can be fully proficient in multiple languages with proper support.</p>
-                    <br>
-                    <p><strong>Supporting Heritage Language Development:</strong><br>
-                    • Consistent family language policies<br>
-                    • Access to books, media, and entertainment in heritage languages<br>
-                    • Community language schools and cultural programs<br>
-                    • Positive reinforcement and celebration of multilingualism<br>
-                    • Connection with extended family and homeland</p>
-                `
-            }
-        };
+    <!-- Sources Panel -->
+    <div class="sources-panel" id="sourcesPanel">
+        <div class="sources-panel-header">
+            <button class="sources-panel-close" onclick="closeSourcesPanel()">×</button>
+            <div class="sources-panel-title">Research Sources</div>
+        </div>
+        <div class="sources-panel-content" id="sourcesPanelContent"></div>
+    </div>
 
-        // Globe variables
-        let world;
-        let globeInitialized = false;
-
-        // Simplified pin locations
-        const locationMarkers = [
-            { lat: 42, lng: 12, label: '🇮🇹', name: 'Italy', id: 'italy', size: 0.8, color: '#ff6b6b' },
-            { lat: 40, lng: -100, label: '🌎', name: 'Indigenous Americas', id: 'indigenous', size: 0.8, color: '#4ecdc4' },
-            { lat: 35, lng: 105, label: '🌏', name: 'Asia', id: 'immigrant', size: 0.8, color: '#45b7d1' },
-            { lat: 0, lng: 20, label: '🌍', name: 'Africa', id: 'immigrant', size: 0.8, color: '#f7b731' },
-            { lat: -25, lng: 135, label: '🇦🇺', name: 'Australia', id: 'immigrant', size: 0.8, color: '#5f27cd' }
-        ];
-
-        function initGlobe() {
-            if (globeInitialized) return;
-            
-            const container = document.getElementById('globeViz');
-            
-            world = Globe()
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-                .backgroundImageUrl('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSIxMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMwYTFlM2QiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIyMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI1MDAiIGN5PSIzMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI3MDAiIGN5PSI0MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI5MDAiIGN5PSI1MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSI2MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI3MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI2MDAiIGN5PSI4MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI4MDAiIGN5PSI5MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSI0NTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI1NTAiIGN5PSIxNTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI3NTAiIGN5PSI2NTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48L3N2Zz4=')
-                .atmosphereColor('#667eea')
-                .atmosphereAltitude(0.15)
-                .showGlobe(true)
-                .showAtmosphere(true)
-                .polygonsData([])
-                .pointsData(locationMarkers)
-                .pointAltitude(0.01)
-                .pointRadius('size')
-                .pointColor('color')
-                .pointLabel(d => `<div style="background: rgba(0,0,0,0.9); padding: 8px 12px; border-radius: 8px; color: white; font-weight: bold;">${d.label} ${d.name}</div>`)
-                .onPointClick(point => {
-                    openInfoPanel(point.id, point.name);
-                })
-                .pointsMerge(false)
-                (container);
-            
-            // Load and apply custom colors to countries
-            loadCountries();
-            
-            // Set initial point of view
-            world.pointOfView({ lat: 20, lng: 0, altitude: 2.2 });
-            
-            // Enable auto-rotation
-            world.controls().autoRotate = true;
-            world.controls().autoRotateSpeed = 0.3;
-            world.controls().enableZoom = true;
-            
-            globeInitialized = true;
-            resizeGlobe();
-        }
-
-        async function loadCountries() {
-            try {
-                const res = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json');
-                const worldData = await res.json();
-                const countries = topojson.feature(worldData, worldData.objects.countries);
-                
-                // Update the globe with custom colors
-                world
-                    .polygonsData(countries.features)
-                    .polygonCapColor(() => '#a8d5ba') // Light pastel green for land
-                    .polygonSideColor(() => '#a8d5ba')
-                    .polygonStrokeColor(() => '#1e3a5f') // Navy blue borders
-                    .polygonAltitude(0.001)
-                    .polygonsTransitionDuration(600);
-            } catch (error) {
-                console.error('Error loading countries:', error);
-            }
-        }
-
-        function resizeGlobe() {
-            if (!world) return;
-            const container = document.getElementById('globeViz');
-            world.width(container.clientWidth);
-            world.height(container.clientHeight);
-        }
-
-        function toggleRotation() {
-            if (!world) return;
-            const controls = world.controls();
-            controls.autoRotate = !controls.autoRotate;
-        }
-
-        function resetView() {
-            if (!world) return;
-            world.pointOfView({ lat: 20, lng: 0, altitude: 2.2 }, 1000);
-            world.controls().autoRotate = true;
-        }
-
-        // Info Panel Functions
-        function openInfoPanel(contentId, locationName) {
-            const panel = document.getElementById('infoPanel');
-            const title = document.getElementById('infoPanelTitle');
-            const contentDiv = document.getElementById('infoPanelContent');
-            
-            title.textContent = content[contentId].title;
-            contentDiv.innerHTML = content[contentId].text;
-            
-            panel.classList.add('active');
-        }
-
-        function closeInfoPanel() {
-            document.getElementById('infoPanel').classList.remove('active');
-        }
-
-        // Page navigation
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(pageId).classList.add('active');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                if (btn.textContent.toLowerCase().includes(pageId === 'bubbles' ? 'overview' : 'global')) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            if (pageId === 'globe') {
-                setTimeout(() => {
-                    initGlobe();
-                }, 100);
-            }
-        }
-
-        function openModal(contentId) {
-            const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalText = document.getElementById('modal-text');
-            
-            modalTitle.textContent = content[contentId].title;
-            modalText.innerHTML = content[contentId].text;
-            
-            modal.classList.add('active');
-        }
-
-        function closeModal(event) {
-            if (!event || event.target.id === 'modal') {
-                document.getElementById('modal').classList.remove('active');
-            }
-        }
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-                closeInfoPanel();
-            }
-        });
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (document.getElementById('globe').classList.contains('active')) {
-                resizeGlobe();
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
