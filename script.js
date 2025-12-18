@@ -173,10 +173,11 @@ let rotation = 0;
 let autoRotate = true;
 let isDragging = false;
 let lastX = 0;
+let animationId = null;
 
-const globeRadius = 250;
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
+const globeRadius = 350;
+let centerX = canvas.width / 2;
+let centerY = canvas.height / 2;
 
 // Pin locations (lat, lon, label, modalId)
 const pins = [
@@ -187,58 +188,64 @@ const pins = [
     { lat: -25, lon: 135, label: '🇦🇺 Australia', id: 'immigrant' }
 ];
 
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    const size = Math.min(container.clientWidth * 0.9, container.clientHeight * 0.9, 800);
+    canvas.width = size;
+    canvas.height = size;
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+}
+
 function drawGlobe() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    const actualRadius = Math.min(globeRadius, canvas.width / 2 - 20, canvas.height / 2 - 20);
+    
     // Draw ocean
     ctx.beginPath();
-    ctx.arc(centerX, centerY, globeRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
     ctx.fillStyle = '#4a90e2';
     ctx.fill();
     
     // Add gradient for depth
     const gradient = ctx.createRadialGradient(
-        centerX - 80, centerY - 80, 50,
-        centerX, centerY, globeRadius
+        centerX - actualRadius * 0.3, centerY - actualRadius * 0.3, actualRadius * 0.2,
+        centerX, centerY, actualRadius
     );
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
     gradient.addColorStop(0.5, 'rgba(102, 126, 234, 0.2)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0.3)');
     
     ctx.beginPath();
-    ctx.arc(centerX, centerY, globeRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
     ctx.fillStyle = gradient;
     ctx.fill();
     
     // Draw simplified continents
-    drawContinents();
+    drawContinents(actualRadius);
     
     // Draw pins
     pins.forEach(pin => {
-        drawPin(pin);
+        drawPin(pin, actualRadius);
     });
     
     // Draw globe outline
     ctx.beginPath();
-    ctx.arc(centerX, centerY, globeRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, actualRadius, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 3;
     ctx.stroke();
 }
 
-function drawContinents() {
+function drawContinents(radius) {
+    const scale = radius / globeRadius;
     const continents = [
-        // North America
         { points: [[240, 150], [280, 140], [290, 180], [270, 220], [230, 200]], rotation: 90 },
-        // South America
         { points: [[260, 250], [285, 240], [290, 290], [270, 310], [250, 290]], rotation: 90 },
-        // Europe
         { points: [[350, 170], [370, 165], [375, 185], [365, 195], [345, 190]], rotation: 0 },
-        // Africa
         { points: [[360, 230], [380, 220], [390, 270], [370, 300], [350, 280]], rotation: 0 },
-        // Asia
         { points: [[420, 160], [480, 150], [500, 200], [480, 230], [430, 220]], rotation: -90 },
-        // Australia
         { points: [[470, 320], [500, 315], [510, 340], [495, 355], [465, 345]], rotation: -90 }
     ];
     
@@ -248,9 +255,11 @@ function drawContinents() {
     continents.forEach(continent => {
         if (isVisible(continent.rotation)) {
             ctx.beginPath();
-            const transformedPoints = continent.points.map(p => 
-                rotatePoint(p[0], p[1], rotation + continent.rotation)
-            );
+            const transformedPoints = continent.points.map(p => {
+                const scaledX = centerX + (p[0] - 300) * scale;
+                const scaledY = centerY + (p[1] - 300) * scale;
+                return rotatePoint(scaledX, scaledY, rotation + continent.rotation);
+            });
             
             ctx.moveTo(transformedPoints[0].x, transformedPoints[0].y);
             transformedPoints.forEach(p => ctx.lineTo(p.x, p.y));
@@ -262,14 +271,16 @@ function drawContinents() {
     ctx.globalAlpha = 1;
 }
 
-function drawPin(pin) {
-    const pos = projectLatLon(pin.lat, pin.lon);
+function drawPin(pin, radius) {
+    const pos = projectLatLon(pin.lat, pin.lon, radius);
     
     if (!pos.visible) return;
     
+    const pinSize = radius / 30;
+    
     // Pin body
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y - 15, 8, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y - pinSize * 2, pinSize, 0, Math.PI * 2);
     ctx.fillStyle = '#ff6b6b';
     ctx.fill();
     ctx.strokeStyle = 'white';
@@ -278,33 +289,35 @@ function drawPin(pin) {
     
     // Pin point
     ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y - 7);
-    ctx.lineTo(pos.x - 5, pos.y);
-    ctx.lineTo(pos.x + 5, pos.y);
+    ctx.moveTo(pos.x, pos.y - pinSize);
+    ctx.lineTo(pos.x - pinSize * 0.6, pos.y);
+    ctx.lineTo(pos.x + pinSize * 0.6, pos.y);
     ctx.closePath();
     ctx.fillStyle = '#ff6b6b';
     ctx.fill();
     
     // Label
-    ctx.font = 'bold 14px Arial';
+    const fontSize = Math.max(12, radius / 30);
+    ctx.font = `bold ${fontSize}px Arial`;
     ctx.fillStyle = 'white';
     ctx.strokeStyle = 'rgba(0,0,0,0.5)';
     ctx.lineWidth = 3;
-    ctx.strokeText(pin.label, pos.x - 30, pos.y - 25);
-    ctx.fillText(pin.label, pos.x - 30, pos.y - 25);
+    ctx.strokeText(pin.label, pos.x - 30, pos.y - pinSize * 3);
+    ctx.fillText(pin.label, pos.x - 30, pos.y - pinSize * 3);
     
     // Store position for click detection
     pin.screenX = pos.x;
     pin.screenY = pos.y;
+    pin.pinSize = pinSize * 3;
 }
 
-function projectLatLon(lat, lon) {
+function projectLatLon(lat, lon, radius) {
     const phi = (90 - lat) * Math.PI / 180;
     const theta = (lon + rotation) * Math.PI / 180;
     
-    const x = globeRadius * Math.sin(phi) * Math.cos(theta);
-    const y = globeRadius * Math.cos(phi);
-    const z = globeRadius * Math.sin(phi) * Math.sin(theta);
+    const x = radius * Math.sin(phi) * Math.cos(theta);
+    const y = radius * Math.cos(phi);
+    const z = radius * Math.sin(phi) * Math.sin(theta);
     
     return {
         x: centerX + x * 0.8,
@@ -334,11 +347,18 @@ function isVisible(continentRotation) {
 
 function animate() {
     if (autoRotate) {
-        rotation += 0.3;
+        rotation += 0.2;
         if (rotation >= 360) rotation = 0;
     }
     drawGlobe();
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
+}
+
+function stopAnimation() {
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
 }
 
 // Mouse interactions
@@ -350,10 +370,10 @@ canvas.addEventListener('mousedown', (e) => {
     // Check if clicked on a pin
     let clickedPin = false;
     pins.forEach(pin => {
-        if (pin.screenX && pin.screenY) {
+        if (pin.screenX && pin.screenY && pin.pinSize) {
             const dx = x - pin.screenX;
             const dy = y - pin.screenY;
-            if (Math.sqrt(dx*dx + dy*dy) < 20) {
+            if (Math.sqrt(dx*dx + dy*dy) < pin.pinSize) {
                 openModal(pin.id);
                 clickedPin = true;
             }
@@ -385,6 +405,49 @@ canvas.addEventListener('mouseleave', () => {
     isDragging = false;
 });
 
+// Touch events for mobile
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    let clickedPin = false;
+    pins.forEach(pin => {
+        if (pin.screenX && pin.screenY && pin.pinSize) {
+            const dx = x - pin.screenX;
+            const dy = y - pin.screenY;
+            if (Math.sqrt(dx*dx + dy*dy) < pin.pinSize) {
+                openModal(pin.id);
+                clickedPin = true;
+            }
+        }
+    });
+    
+    if (!clickedPin) {
+        isDragging = true;
+        lastX = x;
+    }
+});
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (isDragging) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const deltaX = x - lastX;
+        rotation += deltaX * 0.5;
+        lastX = x;
+        autoRotate = false;
+    }
+});
+
+canvas.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
 function toggleRotation() {
     autoRotate = !autoRotate;
 }
@@ -393,11 +456,6 @@ function resetView() {
     rotation = 0;
     autoRotate = true;
 }
-
-// Start animation when page loads
-window.addEventListener('load', () => {
-    animate();
-});
 
 // Page navigation
 function showPage(pageId) {
@@ -409,7 +467,24 @@ function showPage(pageId) {
     });
     
     document.getElementById(pageId).classList.add('active');
-    event.target.classList.add('active');
+    
+    // Find and activate the corresponding nav button
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.textContent.toLowerCase().includes(pageId === 'bubbles' ? 'overview' : 'global')) {
+            btn.classList.add('active');
+        }
+    });
+    
+    if (pageId === 'globe') {
+        setTimeout(() => {
+            resizeCanvas();
+            if (!animationId) {
+                animate();
+            }
+        }, 100);
+    } else {
+        stopAnimation();
+    }
 }
 
 function openModal(contentId) {
@@ -433,5 +508,20 @@ function closeModal(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeModal();
+    }
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    if (document.getElementById('globe').classList.contains('active')) {
+        resizeCanvas();
+    }
+});
+
+// Initialize on load
+window.addEventListener('load', () => {
+    if (document.getElementById('globe').classList.contains('active')) {
+        resizeCanvas();
+        animate();
     }
 });
