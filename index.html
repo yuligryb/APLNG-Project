@@ -216,7 +216,7 @@
             right: 0;
             bottom: 0;
             display: flex;
-            background: #000;
+            background: #0a1e3d;
             padding: 0;
             margin: 0;
             z-index: 100;
@@ -228,7 +228,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            background: #000;
+            background: #0a1e3d;
         }
 
         #globeViz {
@@ -329,6 +329,26 @@
             background: white;
             transform: translateX(5px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #ff4757;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(255, 71, 87, 0.4);
         }
 
         /* Instructions Overlay */
@@ -468,6 +488,7 @@
                     
                     <!-- Control Buttons -->
                     <div class="globe-controls">
+                        <button class="back-btn" onclick="showPage('bubbles')">← Back to Overview</button>
                         <button class="control-btn" onclick="toggleRotation()">⏯️ Toggle Rotation</button>
                         <button class="control-btn" onclick="resetView()">🔄 Reset View</button>
                     </div>
@@ -686,10 +707,13 @@
             const container = document.getElementById('globeViz');
             
             world = Globe()
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
-                .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+                .backgroundImageUrl('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwMCIgaGVpZ2h0PSIxMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMwYTFlM2QiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIyMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI1MDAiIGN5PSIzMDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI3MDAiIGN5PSI0MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI5MDAiIGN5PSI1MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIyMDAiIGN5PSI2MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI3MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI2MDAiIGN5PSI4MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI4MDAiIGN5PSI5MDAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSIxNTAiIGN5PSI0NTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48Y2lyY2xlIGN4PSI1NTAiIGN5PSIxNTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjQiLz48Y2lyY2xlIGN4PSI3NTAiIGN5PSI2NTAiIHI9IjEiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjMiLz48L3N2Zz4=')
                 .atmosphereColor('#667eea')
                 .atmosphereAltitude(0.15)
+                .showGlobe(true)
+                .showAtmosphere(true)
+                .polygonsData([])
                 .pointsData(locationMarkers)
                 .pointAltitude(0.01)
                 .pointRadius('size')
@@ -701,6 +725,9 @@
                 .pointsMerge(false)
                 (container);
             
+            // Load and apply custom colors to countries
+            loadCountries();
+            
             // Set initial point of view
             world.pointOfView({ lat: 20, lng: 0, altitude: 2.2 });
             
@@ -711,6 +738,25 @@
             
             globeInitialized = true;
             resizeGlobe();
+        }
+
+        async function loadCountries() {
+            try {
+                const res = await fetch('https://unpkg.com/world-atlas@2/countries-110m.json');
+                const worldData = await res.json();
+                const countries = topojson.feature(worldData, worldData.objects.countries);
+                
+                // Update the globe with custom colors
+                world
+                    .polygonsData(countries.features)
+                    .polygonCapColor(() => '#a8d5ba') // Light pastel green for land
+                    .polygonSideColor(() => '#a8d5ba')
+                    .polygonStrokeColor(() => '#1e3a5f') // Navy blue borders
+                    .polygonAltitude(0.001)
+                    .polygonsTransitionDuration(600);
+            } catch (error) {
+                console.error('Error loading countries:', error);
+            }
         }
 
         function resizeGlobe() {
