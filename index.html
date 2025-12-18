@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Language Loss & Social Justice</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="//unpkg.com/d3"></script>
+    <script src="//unpkg.com/globe.gl"></script>
 </head>
 <body>
     <div class="container">
@@ -47,11 +49,11 @@
             </div>
         </div>
 
-<!-- Globe Page -->
+        <!-- Globe Page -->
         <div id="globe" class="page">
             <div class="globe-container">
                 <div class="globe-wrapper">
-                    <canvas id="globeCanvas" width="800" height="800"></canvas>
+                    <div id="globeViz"></div>
                 </div>
                 
                 <div class="globe-sidebar">
@@ -84,6 +86,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <!-- Modal -->
     <div id="modal" class="modal" onclick="closeModal(event)">
